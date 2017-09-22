@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.db import models
+from django.shortcuts import reverse
+
 from django_pdf.models import PDFModelMixin
 from django_pdf import pdf_fields
 
@@ -21,3 +23,6 @@ class Report(PDFModelMixin, models.Model):
     @property
     def author_name(self):
         return self.author.get_full_name()
+
+    def get_absolute_url(self):
+        return reverse('report-pdf', args=[str(self.pk)])
