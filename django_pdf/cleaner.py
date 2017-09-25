@@ -16,6 +16,7 @@ class PDFModelCleaner(object):
         if fields is None:
             fields = instance.get_pdf_fields()
 
+        # Set fields
         try:
             for field in fields:
                 if not isinstance(field, PDFField):
@@ -26,11 +27,13 @@ class PDFModelCleaner(object):
 
         self.fields = fields
 
+        # Set instance
         if not isinstance(instance, Model):
             raise TypeError("\"instance\" should be a Django model.")
 
         self.instance = instance
 
+        # Set context
         if context is None:
             context = {}
 

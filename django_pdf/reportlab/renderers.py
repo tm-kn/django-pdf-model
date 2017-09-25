@@ -1,22 +1,22 @@
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.platypus import SimpleDocTemplate
 
-from ..renderers import PDFRenderer
+from django_pdf.pdf_fields import CharPDFField
+from django_pdf.renderers import PDFRenderer
+
+from .field_renderers import ReportLabCharPDFFieldRenderer
 
 
 class SimpleDocTemplateReportLabPDFRenderer(PDFRenderer):
     _doc_elements = []
 
+    field_renderers = [
+        (CharPDFField, ReportLabCharPDFFieldRenderer)
+    ]
+
     def set_up(self):
         self._doc = SimpleDocTemplate(self.buffer_object)
         self._styles = getSampleStyleSheet()
-
-    def render_field(self, field_bound_value):
-        # TODO: Implement rendering fields
-        paragraph = Paragraph(field_bound_value.value,
-                              style=self._styles['Normal'])
-
-        self._doc_elements.append(paragraph)
 
     def save(self):
         self._doc.build(self._doc_elements)

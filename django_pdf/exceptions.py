@@ -8,3 +8,7 @@ class PDFFieldCleaningError(PDFFieldError):
 
 class PDFFieldConfigurationError(PDFFieldError):
     pass
+
+
+class PDFRendererError(Exception):
+    pass

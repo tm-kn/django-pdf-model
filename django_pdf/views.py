@@ -33,7 +33,7 @@ class PDFModelSingleObjectMixin(SingleObjectMixin):
 
     @cached_property
     def pdf_renderer(self):
-        return self._get_pdf_renderer()
+        return self.get_pdf_renderer()
 
     @cached_property
     def pdf_response(self):
@@ -69,6 +69,14 @@ class PDFModelSingleObjectMixin(SingleObjectMixin):
         # settings
         return get_default_pdf_renderer_class()
 
+    def write_pdf_to_response(self):
+        self._render_pdf_fields()
+
+    def get_pdf_renderer(self):
+        renderer_class = self.get_pdf_renderer_class()
+
+        return renderer_class(self.pdf_response)
+
     def _get_model_pdf_renderer_class(self):
         model_value = self.get_object().get_pdf_renderer_class()
 
@@ -95,10 +103,6 @@ class PDFModelSingleObjectMixin(SingleObjectMixin):
 
             return view_value
 
-    def _get_pdf_renderer(self):
-        renderer_class = self.get_pdf_renderer_class()
-        return renderer_class(self.pdf_response)
-
     def _get_pdf_model_cleaner_class(self):
         return PDFModelCleaner
 
@@ -115,9 +119,6 @@ class PDFModelSingleObjectMixin(SingleObjectMixin):
 
     def _clean_pdf_fields(self):
         return self.pdf_model_cleaner.clean()
-
-    def write_pdf_to_response(self):
-        self._render_pdf_fields()
 
 
 class PDFModelView(PDFModelSingleObjectMixin, View):
