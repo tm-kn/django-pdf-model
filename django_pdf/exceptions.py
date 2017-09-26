@@ -12,3 +12,15 @@ class PDFFieldConfigurationError(PDFFieldError):
 
 class PDFRendererError(Exception):
     pass
+
+
+class PDFFieldRendererError(Exception):
+    pass
+
+
+class PDFFieldRendererNotFound(PDFFieldRendererError):
+    pass
+
+
+class PDFFieldRendererConfigurationError(PDFFieldRendererError):
+    pass

@@ -15,9 +15,9 @@ class Report(PDFModelMixin, models.Model):
 
     pdf_field_list = [
         pdf_fields.TitlePDFField('title'),
-        pdf_fields.TitlePDFField('introduction'),
-        pdf_fields.TitlePDFField('content'),
-        pdf_fields.TitlePDFField('author_name'),
+        pdf_fields.HeadingPDFField('introduction', heading_level=3),
+        pdf_fields.CharPDFField('content'),
+        pdf_fields.CharPDFField('author_name'),
     ]
 
     @property

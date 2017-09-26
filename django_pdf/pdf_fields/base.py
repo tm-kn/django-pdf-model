@@ -1,6 +1,4 @@
-from numbers import Number
-
-from .exceptions import PDFFieldCleaningError
+from ..exceptions import PDFFieldCleaningError
 
 
 class PDFField(object):
@@ -8,6 +6,7 @@ class PDFField(object):
 
     def __init__(self, name, **kwargs):
         self.name = name
+        self.kwargs = kwargs
 
     def clean(self, value, context=None):
         if not isinstance(value, self.get_allowed_value_types()):
@@ -30,19 +29,6 @@ class PDFField(object):
     @classmethod
     def get_allowed_value_types(cls):
         return tuple(cls.ALLOWED_VALUE_TYPES)
-
-
-class CharPDFField(PDFField):
-    ALLOWED_VALUE_TYPES = [str, Number]
-
-    def _clean_value(self, value, context=None):
-        # If it's number or string, just make sure it
-        # returns string.
-        return str(value)
-
-
-class TitlePDFField(CharPDFField):
-    pass
 
 
 class PDFFieldBoundValue(object):
