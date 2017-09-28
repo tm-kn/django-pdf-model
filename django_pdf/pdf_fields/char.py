@@ -19,6 +19,7 @@ class TitlePDFField(CharPDFField):
 class ParagraphPDFField(CharPDFField):
     pass
 
+
 class HeadingPDFField(CharPDFField):
     HEADINGS_RANGE = list(range(1, 7))
 

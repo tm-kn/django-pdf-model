@@ -1,14 +1,12 @@
----
 sudo: false
 language: python
-
 matrix:
   include:
     - python: 3.6
       env: TOXENV=py36-django110
     - python: 3.6
       env: TOXENV=py36-django111
-
+    - env: TOXENV=flake8
 install: pip install tox codecov
 script: tox
 after_success: codecov

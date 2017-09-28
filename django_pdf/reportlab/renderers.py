@@ -1,7 +1,6 @@
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate
 
-from django_pdf import pdf_fields
 from django_pdf.renderers import PDFRenderer
 
 from . import field_renderers
