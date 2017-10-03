@@ -16,11 +16,11 @@ class PDFField(object):
                                    self.__class__.__name__,
                                    ','.join(self.get_allowed_value_types())))
 
-        return self._clean_value(value, context=context)
+        return self.clean_value(value, context=context)
 
-    def _clean_value(self, value, context=None):
+    def clean_value(self, value, context=None):
         not_implemented_error = '{class_name} must implement the ' \
-                                '_clean_value() method.'
+                                'clean_value() method.'
 
         raise NotImplementedError(
                 not_implemented_error.format(class_name=self.__class__.__name)

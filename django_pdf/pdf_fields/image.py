@@ -8,5 +8,5 @@ class ImagePDFField(PDFField):
         ImageFile
     ]
 
-    def _clean_value(self, value, context=None):
+    def clean_value(self, value, context=None):
         return value

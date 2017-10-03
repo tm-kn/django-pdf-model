@@ -5,6 +5,7 @@ from setuptools import setup
 install_requires = [
     'django>=1.10,<1.12',
     'reportlab>=3.4,<3.5',
+    'beautifulsoup4>=4.6,<4.7',
 ]
 
 tests_require = [

@@ -6,7 +6,7 @@ from . import PDFField
 class CharPDFField(PDFField):
     ALLOWED_VALUE_TYPES = [str, Number]
 
-    def _clean_value(self, value, context=None):
+    def clean_value(self, value, context=None):
         # If it's number or string, just make sure it
         # returns string.
         return str(value)
