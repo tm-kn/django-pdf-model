@@ -1,7 +1,6 @@
-from collections import OrderedDict
+from inspect import isclass
 import logging
 
-from django.db.models import Model
 from django.utils.functional import cached_property
 
 from .exceptions import PDFFieldConfigurationError, PDFFieldError
@@ -28,8 +27,8 @@ class PDFModelCleaner(object):
         self.fields = fields
 
         # Set instance
-        if not isinstance(instance, Model):
-            raise TypeError("\"instance\" should be a Django model.")
+        if isclass(instance) or not isinstance(instance, object):
+            raise TypeError("\"instance\" should be an object.")
 
         self.instance = instance
 
@@ -50,14 +49,13 @@ class PDFModelCleaner(object):
 
         return self.cleaned_data
 
+    def _get_cleaned_data(self):
+        for bound_value in self._get_values():
+            yield (bound_value.field.name, bound_value)
+
     @cached_property
     def cleaned_data(self):
-        cleaned_data = OrderedDict()
-
-        for bound_value in self._get_values():
-            cleaned_data[bound_value.field.name] = bound_value
-
-        return cleaned_data
+        return list(self._get_cleaned_data())
 
     def _clean_field(self, field, value):
         return field.clean(value, context=self.context)

@@ -10,10 +10,6 @@ class PDFFieldConfigurationError(PDFFieldError):
     pass
 
 
-class PDFRendererError(Exception):
-    pass
-
-
 class PDFFieldRendererError(Exception):
     pass
 
