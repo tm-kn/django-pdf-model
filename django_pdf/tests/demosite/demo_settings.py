@@ -1,21 +1,19 @@
 import os
 
+DEMOSITE_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 DEBUG = True
 
 DATABASES = {
     'default': {
-        'ENGINE': os.environ.get('DATABASE_ENGINE',
-                                 'django.db.backends.sqlite3'),
-        'NAME': os.environ.get('DATABASE_NAME', 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(DEMOSITE_ROOT, 'db.sqlite3'),
     }
 }
 
-ALLOWED_HOSTS = ['*']
-
 SECRET_KEY = 'secretkey'
 
-ROOT_URLCONF = 'tests.site.urls'
+ROOT_URLCONF = 'django_pdf.tests.demosite.urls'
 
 STATIC_URL = '/static/'
 
@@ -25,14 +23,9 @@ STATICFILES_FINDERS = (
 
 USE_TZ = False
 
-TESTS_ROOT = os.path.dirname(os.path.abspath(__file__))
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            os.path.join(TESTS_ROOT, 'site', 'templates'),
-        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -66,5 +59,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'django_pdf',
-    'tests.site',
+    'django_pdf.reportlab',
+
+    'django_pdf.tests.demosite',
 ]
