@@ -25,6 +25,7 @@ class Migration(migrations.Migration):
                 ('introduction', models.CharField(max_length=255)),
                 ('content', models.TextField()),
                 ('author', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
+                ('html_content', models.TextField()),
             ],
             options={
                 'abstract': False,

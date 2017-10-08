@@ -10,6 +10,10 @@ class PDFFieldConfigurationError(PDFFieldError):
     pass
 
 
+class HTMLPDFFieldElementNotFound(Exception):
+    pass
+
+
 class PDFFieldRendererError(Exception):
     pass
 

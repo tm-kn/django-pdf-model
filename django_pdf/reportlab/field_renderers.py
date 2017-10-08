@@ -1,10 +1,10 @@
 from reportlab.platypus import Image, Paragraph
 
 from django_pdf import pdf_fields
-from django_pdf.renderers import PDFFieldRenderer
+from django_pdf.renderers import AbstractPDFFieldRenderer
 
 
-class ReportLabCharPDFFieldRenderer(PDFFieldRenderer):
+class ReportLabCharPDFFieldRenderer(AbstractPDFFieldRenderer):
     field_type = pdf_fields.CharPDFField
 
     def render(self, pdf_renderer, field_bound_value):
@@ -14,7 +14,7 @@ class ReportLabCharPDFFieldRenderer(PDFFieldRenderer):
         pdf_renderer._doc_elements.append(reportlab_paragraph)
 
 
-class ReportLabTitlePDFFieldRenderer(PDFFieldRenderer):
+class ReportLabTitlePDFFieldRenderer(AbstractPDFFieldRenderer):
     field_type = pdf_fields.TitlePDFField
 
     def render(self, pdf_renderer, field_bound_value):
@@ -24,7 +24,7 @@ class ReportLabTitlePDFFieldRenderer(PDFFieldRenderer):
         pdf_renderer._doc_elements.append(reportlab_paragraph)
 
 
-class ReportLabHeadingPDFFieldRenderer(PDFFieldRenderer):
+class ReportLabHeadingPDFFieldRenderer(AbstractPDFFieldRenderer):
     field_type = pdf_fields.HeadingPDFField
 
     def render(self, pdf_renderer, field_bound_value):
@@ -38,10 +38,20 @@ class ReportLabHeadingPDFFieldRenderer(PDFFieldRenderer):
         pdf_renderer._doc_elements.append(reportlab_paragraph)
 
 
-class ReportLabImagePDFFieldRenderer(PDFFieldRenderer):
+class ReportLabImagePDFFieldRenderer(AbstractPDFFieldRenderer):
     field_type = pdf_fields.ImagePDFField
 
     def render(self, pdf_renderer, field_bound_value):
-        reportlab_image = Image(field_bound_value.open())
+        reportlab_image = Image(field_bound_value.value.open())
 
         pdf_renderer._doc_elements.append(reportlab_image)
+
+
+class ReportLabHTMLPDFFieldRenderer(AbstractPDFFieldRenderer):
+    field_type = pdf_fields.HTMLPDFField
+
+    def render(self, pdf_renderer, field_bound_value):
+        paragraph = Paragraph(field_bound_value.value,
+                              style=pdf_renderer.styles['Heading1'])
+
+        pdf_renderer._doc_elements.append(paragraph)

@@ -1,9 +1,9 @@
 from numbers import Number
 
-from . import PDFField
+from . import AbstractPDFField
 
 
-class CharPDFField(PDFField):
+class CharPDFField(AbstractPDFField):
     ALLOWED_VALUE_TYPES = [str, Number]
 
     def clean_value(self, value, context=None):

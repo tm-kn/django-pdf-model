@@ -1,9 +1,9 @@
 from django.core.files.images import ImageFile
 
-from . import PDFField
+from . import AbstractPDFField
 
 
-class ImagePDFField(PDFField):
+class ImagePDFField(AbstractPDFField):
     ALLOWED_VALUE_TYPES = [
         ImageFile
     ]

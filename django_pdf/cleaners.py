@@ -1,10 +1,9 @@
-from inspect import isclass
 import logging
 
 from django.utils.functional import cached_property
 
 from .exceptions import PDFFieldConfigurationError, PDFFieldError
-from .pdf_fields import PDFField, PDFFieldBoundValue
+from .pdf_fields import AbstractPDFField, PDFFieldBoundValue
 
 
 logger = logging.getLogger(__name__)
@@ -18,17 +17,18 @@ class PDFModelCleaner(object):
         # Set fields
         try:
             for field in fields:
-                if not isinstance(field, PDFField):
-                    raise TypeError("field has to be a PDFField instance")
+                if not isinstance(field, AbstractPDFField):
+                    raise TypeError('"field" has to be an AbstractPDFField '
+                                    'instance.')
         except TypeError:
-            raise TypeError("\"fields\" has to be a list of PDFField "
-                            "instances.")
+            raise TypeError('"fields" has to be a list of AbstractPDFField '
+                            'instances.')
 
         self.fields = fields
 
         # Set instance
-        if isclass(instance) or not isinstance(instance, object):
-            raise TypeError("\"instance\" should be an object.")
+        if not isinstance(instance, object):
+            raise TypeError('"instance" should be an object.')
 
         self.instance = instance
 
@@ -89,6 +89,9 @@ class PDFModelCleaner(object):
     def _get_values(self):
         for field in self.fields:
             try:
-                yield self._get_value_for_field(field)
+                field_value = self._get_value_for_field(field)
             except PDFFieldError:
                 logger.exception("Error when trying to get field's value.")
+            else:
+                if field_value:
+                    yield field_value

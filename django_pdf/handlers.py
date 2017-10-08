@@ -6,7 +6,7 @@ from . import (
 )
 
 
-class ModelToPDFHandler(object):
+class AbstractModelToPDFHandler(object):
     pdf_model_cleaner_class = get_default_pdf_model_cleaner_class()
     pdf_renderer_class = get_default_pdf_renderer_class()
 
@@ -77,6 +77,11 @@ class ModelToPDFHandler(object):
     def get_pdf_renderer(self):
         return self._pdf_renderer_instance
 
+    def render(self):
+        raise NotImplementedError('The "render" method has to be implemented.')
+
+
+class ModelToPDFHandler(AbstractModelToPDFHandler):
     def render(self):
         # Clean fields
         cleaned_pdf_field_values = [x[1] for x in self.clean_pdf_fields()]

@@ -1,6 +1,6 @@
 __all__ = [
     # base
-    'PDFField',
+    'AbstractPDFField',
     'PDFFieldBoundValue',
 
     # char
@@ -11,9 +11,13 @@ __all__ = [
 
     # image
     'ImagePDFField',
+
+    # html
+    'HTMLPDFField',
 ]
 
-from .base import PDFField, PDFFieldBoundValue
+from .base import AbstractPDFField, PDFFieldBoundValue
 from .char import CharPDFField, HeadingPDFField, ParagraphPDFField, \
                   TitlePDFField
+from .html import HTMLPDFField
 from .image import ImagePDFField

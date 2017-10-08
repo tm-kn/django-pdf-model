@@ -1,7 +1,7 @@
 from ..exceptions import PDFFieldCleaningError
 
 
-class PDFField(object):
+class AbstractPDFField(object):
     ALLOWED_VALUE_TYPES = []
 
     def __init__(self, name, **kwargs):
@@ -36,8 +36,8 @@ class PDFFieldBoundValue(object):
     Container binding PDFField and associated value.
     """
     def __init__(self, field, value):
-        if not isinstance(field, PDFField):
-            raise TypeError('"field" has to be a PDFField instance.')
+        if not isinstance(field, AbstractPDFField):
+            raise TypeError('"field" has to be an AbstractPDFField instance.')
 
         self.field = field
 

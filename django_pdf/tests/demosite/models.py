@@ -10,6 +10,7 @@ class Report(PDFModelMixin, models.Model):
     title = models.CharField(max_length=255)
     introduction = models.CharField(max_length=255)
     content = models.TextField()
+    html_content = models.TextField()
     author = models.ForeignKey(settings.AUTH_USER_MODEL,
                                on_delete=models.PROTECT)
 
@@ -18,11 +19,17 @@ class Report(PDFModelMixin, models.Model):
         pdf_fields.HeadingPDFField('introduction', heading_level=3),
         pdf_fields.CharPDFField('content'),
         pdf_fields.CharPDFField('author_name'),
+        pdf_fields.HTMLPDFField('some_html_content'),
     ]
 
     @property
     def author_name(self):
         return self.author.get_full_name()
+
+    def some_html_content(self):
+        return """
+        <p>Test</p>
+        """
 
     def get_absolute_url(self):
         return reverse('report-pdf', args=[str(self.pk)])
