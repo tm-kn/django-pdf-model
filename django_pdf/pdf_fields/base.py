@@ -41,9 +41,10 @@ class PDFFieldBoundValue(object):
 
         self.field = field
 
-        if not isinstance(value, field.get_allowed_value_types()):
+        if not isinstance(value, field.get_allowed_value_types()) \
+                and value is not None:
             raise TypeError('"value" must be {}'.format(
-                ','.join(field.get_allowed_value_types())
+                ','.join([str(x) for x in field.get_allowed_value_types()])
             ))
 
         self.value = value

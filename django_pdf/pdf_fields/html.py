@@ -3,30 +3,48 @@ import logging
 from bs4 import BeautifulSoup, NavigableString, Tag
 
 from . import AbstractPDFField
-from ..exceptions import HTMLPDFFieldElementNotFound
+from ..exceptions import HTMLPDFFieldElementNotFound, PDFFieldCleaningError
 
 logger = logging.getLogger(__name__)
 
 
 class HTMLPDFFieldElement(object):
-    def __init__(self, value):
+    def __init__(self, value, **kwargs):
         self.value = value
+        self.attrs = {}
+        # Get HTML attributes attributes required by the field
+        if isinstance(kwargs.get('attrs'), dict):
+            self.attrs = kwargs['attrs']
+        if self.attrs is not None and not isinstance(self.attrs, dict):
+            raise TypeError('"attrs" has to be a dicitonary or None.')
+        if self.get_required_attrs():
+            for req_attr in self.get_required_attrs():
+                if req_attr not in self.attrs:
+                    raise PDFFieldCleaningError(f'"{req_attr}" has to be '
+                                                'passed to '
+                                                f'{type(self).__name__}.')
 
     def __repr__(self):
         return f"{self.__class__.__name__}({repr(self.value)})"
+
+    @classmethod
+    def get_required_attrs(cls):
+        if hasattr(cls, 'REQUIRED_ATTRS'):
+            return cls.REQUIRED_ATTRS
+        return {}
 
 
 class HTMLPDFFieldElementList(list):
     def __init__(self, *args):
         super().__init__()
-        if args:
-            self.append(args[0])
+        for arg in args:
+            self.append(arg)
 
     def append(self, value):
         if not isinstance(value, HTMLPDFFieldElement):
             raise TypeError(f"{type(self).__name__} has to contain "
-                            "HTMLPDFFieldElement objects only, "
-                            "not {type(value)}.")
+                            f"HTMLPDFFieldElement objects only, "
+                            f"not {type(value)}.")
         super().append(value)
 
     def __repr__(self):
@@ -41,6 +59,10 @@ class HTMLPDFFieldParagraph(HTMLPDFFieldElement):
     pass
 
 
+class HTMLPDFFieldImage(HTMLPDFFieldElement):
+    REQUIRED_ATTRS = ['src']
+
+
 class HTMLPDFFieldUnorderedList(HTMLPDFFieldElement):
     pass
 
@@ -50,7 +72,7 @@ class HTMLPDFFieldOrderedList(HTMLPDFFieldElement):
 
 
 class HTMLPDFFieldAnchor(HTMLPDFFieldElement):
-    pass
+    REQUIRED_ATTRS = ['href']
 
 
 class HtmlPDFFieldImage(HTMLPDFFieldElement):
@@ -89,6 +111,7 @@ class HTMLPDFField(AbstractPDFField):
     BoldText = HtmlPDFFieldBoldText
     Element = HTMLPDFFieldElement
     ElementList = HTMLPDFFieldElementList
+    Image = HTMLPDFFieldImage
     ItalicText = HtmlPDFFieldItalicText
     Paragraph = HTMLPDFFieldParagraph
     StrikeThroughText = HtmlPDFFieldStrikeThroughText
@@ -105,6 +128,7 @@ class HTMLPDFField(AbstractPDFField):
         ('del', 's', 'strike'): StrikeThroughText,
         ('i', 'em'): ItalicText,
         ('b', 'strong'): BoldText,
+        'img': Image,
     }
     TRAVERSE_AND_IGNORE_TAGS = [
         'div',
@@ -126,6 +150,7 @@ class HTMLPDFField(AbstractPDFField):
                              "PDF content out of.")
 
     def convert_html_to_pdf_text(self, value):
+        value = str(value)
         html_list = HTMLPDFFieldElementList()
         # Convert new line characters
         splitlined_string = value.strip().splitlines()
@@ -177,7 +202,15 @@ class HTMLPDFField(AbstractPDFField):
                 if tag.name in self.IGNORE_TAGS:
                     return
             else:
-                value = klass(self.traverse_html_tag(tag.contents))
+                # Get required attributes from the tag
+                attrs = {req_attr: tag.attrs.get(req_attr)
+                         for req_attr in klass.get_required_attrs()}
+                try:
+                    value = klass(self.traverse_html_tag(tag.contents),
+                                  attrs=attrs)
+                except PDFFieldCleaningError:
+                    logger.exception("Cleaning error when traversing HTML "
+                                     "structure.")
                 return HTMLPDFFieldElementList(value)
 
             error_msg = ('"%s" is not an accepted HTML tag in '
