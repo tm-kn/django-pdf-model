@@ -71,6 +71,10 @@ class HTMLPDFFieldOrderedList(HTMLPDFFieldElement):
     pass
 
 
+class HTMLPDFFieldListItem(HTMLPDFFieldElement):
+    pass
+
+
 class HTMLPDFFieldAnchor(HTMLPDFFieldElement):
     REQUIRED_ATTRS = ['href']
 
@@ -113,22 +117,26 @@ class HTMLPDFField(AbstractPDFField):
     ElementList = HTMLPDFFieldElementList
     Image = HTMLPDFFieldImage
     ItalicText = HtmlPDFFieldItalicText
+    ListItem = HTMLPDFFieldListItem
+    OrderedList = HTMLPDFFieldOrderedList
     Paragraph = HTMLPDFFieldParagraph
     StrikeThroughText = HtmlPDFFieldStrikeThroughText
     Text = HTMLPDFFieldText
     UnderlinedText = HtmlPDFFieldUnderlinedText
+    UnorderedList = HTMLPDFFieldUnorderedList
     NewLine = HtmlPDFFieldNewLine
     HTML_TAG_MAPPINGS = {
-        'p': Paragraph,
         'a': Anchor,
-        'b': BoldText,
-        'strong': BoldText,
-        'u': UnderlinedText,
+        ('b', 'strong'): BoldText,
         'br': NewLine,
         ('del', 's', 'strike'): StrikeThroughText,
         ('i', 'em'): ItalicText,
-        ('b', 'strong'): BoldText,
         'img': Image,
+        'li': ListItem,
+        'ol': OrderedList,
+        'p': Paragraph,
+        'u': UnderlinedText,
+        'ul': UnorderedList,
     }
     TRAVERSE_AND_IGNORE_TAGS = [
         'div',
@@ -185,6 +193,32 @@ class HTMLPDFField(AbstractPDFField):
                                  'HTML content.')
         return structure
 
+    def traverse_tag_instance(self, tag):
+        try:
+            klass = self.get_pdf_field_element_for_tag(tag.name)
+        except KeyError:
+            if tag.name in self.TRAVERSE_AND_IGNORE_TAGS:
+                return self.traverse_html_tag(tag.contents)
+            if tag.name in self.IGNORE_TAGS:
+                return HTMLPDFFieldElementList()
+        else:
+            # Get required attributes from the tag
+            attrs = {req_attr: tag.attrs.get(req_attr)
+                     for req_attr in klass.get_required_attrs()}
+            try:
+                value = klass(self.traverse_html_tag(tag.contents),
+                              attrs=attrs)
+            except PDFFieldCleaningError:
+                logger.exception("Cleaning error when traversing HTML "
+                                 "structure.")
+                return HTMLPDFFieldElementList()
+            return HTMLPDFFieldElementList(value)
+
+        error_msg = ('"%s" is not an accepted HTML tag in '
+                     '"traverse_html_tag()" method. Skipped.')
+        logger.error(error_msg, tag.name)
+        raise HTMLPDFFieldElementNotFound
+
     def traverse_html_tag(self, tag):
         # If it's a list, evaluate its children and append
         if isinstance(tag, list):
@@ -194,26 +228,4 @@ class HTMLPDFField(AbstractPDFField):
             return self.convert_html_to_pdf_text(str(tag))
         # Convert tag to a PDF field type and evaluate its children.
         if isinstance(tag, Tag):
-            try:
-                klass = self.get_pdf_field_element_for_tag(tag.name)
-            except KeyError:
-                if tag.name in self.TRAVERSE_AND_IGNORE_TAGS:
-                    return self.traverse_html_tag(tag.contents)
-                if tag.name in self.IGNORE_TAGS:
-                    return
-            else:
-                # Get required attributes from the tag
-                attrs = {req_attr: tag.attrs.get(req_attr)
-                         for req_attr in klass.get_required_attrs()}
-                try:
-                    value = klass(self.traverse_html_tag(tag.contents),
-                                  attrs=attrs)
-                except PDFFieldCleaningError:
-                    logger.exception("Cleaning error when traversing HTML "
-                                     "structure.")
-                return HTMLPDFFieldElementList(value)
-
-            error_msg = ('"%s" is not an accepted HTML tag in '
-                         '"traverse_html_tag()" method. Skipped.')
-            logger.error(error_msg, tag.name)
-            raise HTMLPDFFieldElementNotFound
+            return self.traverse_tag_instance(tag)

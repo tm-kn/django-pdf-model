@@ -51,7 +51,7 @@ class ReportLabHTMLPDFFieldRenderer(AbstractPDFFieldRenderer):
     field_type = pdf_fields.HTMLPDFField
 
     def render(self, pdf_renderer, field_bound_value):
-        paragraph = Paragraph(field_bound_value.value,
-                              style=pdf_renderer.styles['Heading1'])
+        paragraph = Paragraph(repr(field_bound_value.value),
+                              style=pdf_renderer.styles['Normal'])
 
         pdf_renderer._doc_elements.append(paragraph)
