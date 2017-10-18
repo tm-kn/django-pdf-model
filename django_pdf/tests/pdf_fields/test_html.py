@@ -12,11 +12,7 @@ class TestHTMLPDFField(TestCase):
         self.assertEqual(self.html_field.name, 'some_name')
 
     def test_simple_paragraph(self):
-        cleaned_value = self.html_field.clean("""
-            <p>
-                Lorem Ipsum
-            </p>
-        """)
+        cleaned_value = self.html_field.clean('<p>Lorem Ipsum</p>')
         # Cleaning a field returns a list with only paragraph inside it
         self.assertIsInstance(cleaned_value, HTMLPDFField.ElementList)
         self.assertEqual(len(cleaned_value), 1)
@@ -34,12 +30,8 @@ class TestHTMLPDFField(TestCase):
         self.assertEqual(text_value, 'Lorem Ipsum')
 
     def test_list(self):
-        cleaned_value = self.html_field.clean("""
-            <ul>
-                <li>Item 1</li>
-                <li>Item 2</li>
-            </ul>
-        """)
+        cleaned_value = self.html_field.clean('<ul><li>Item 1</li>'
+                                              '<li>Item 2</li></ul>')
         # Cleaning a field returns a list with an unordered list
         self.assertIsInstance(cleaned_value, HTMLPDFField.ElementList)
         self.assertEqual(len(cleaned_value), 1)
@@ -57,60 +49,42 @@ class TestHTMLPDFField(TestCase):
             self.assertIn('Item ', list_item.value[0].value)
 
     def test_image(self):
-        cleaned_value = self.html_field.clean("""
-            <img src="image.jpg">
-        """)
+        cleaned_value = self.html_field.clean('<img src="image.jpg">')
         self.assertEqual(len(cleaned_value), 1)
         image = cleaned_value[0]
         self.assertIsInstance(image, HTMLPDFField.Image)
         self.assertEqual(image.attrs['src'], 'image.jpg')
 
     def test_image_without_src(self):
-        cleaned_value = self.html_field.clean("""
-            <img>
-        """)
+        cleaned_value = self.html_field.clean('<img>')
         # If no argument is passed, src will be none
         self.assertEqual(len(cleaned_value), 1)
         self.assertIsNone(cleaned_value[0].attrs['src'])
 
     def test_image_with_empty_src(self):
-        cleaned_value = self.html_field.clean("""
-            <img src="">
-        """)
+        cleaned_value = self.html_field.clean('<img src="">')
         # If no argument is passed, src will be an empty string
         self.assertEqual(len(cleaned_value), 1)
         self.assertIsInstance(cleaned_value[0].attrs['src'], str)
         self.assertEqual(cleaned_value[0].attrs['src'], '')
 
     def test_ignoring_embeds(self):
-        cleaned_value = self.html_field.clean("""
-            <embed>
-        """)
+        cleaned_value = self.html_field.clean('<embed>')
         self.assertIsInstance(cleaned_value, HTMLPDFField.ElementList)
         self.assertEqual(len(cleaned_value), 0)
 
     def test_ignoring_iframes(self):
-        cleaned_value = self.html_field.clean("""
-            <iframe>
-                <p>Test</p>
-            </iframe>
-        """)
+        cleaned_value = self.html_field.clean('<iframe><p>Test</p></iframe>')
         self.assertIsInstance(cleaned_value, HTMLPDFField.ElementList)
         self.assertEqual(len(cleaned_value), 0)
 
     def test_ignoring_divs_without_content(self):
-        cleaned_value = self.html_field.clean("""
-            <div></div>
-        """)
+        cleaned_value = self.html_field.clean('<div></div>')
         self.assertIsInstance(cleaned_value, HTMLPDFField.ElementList)
         self.assertEqual(len(cleaned_value), 0)
 
     def test_ignoring_divs_with_content(self):
-        cleaned_value = self.html_field.clean("""
-            <div>
-                <p>Test</p>
-            </div>
-        """)
+        cleaned_value = self.html_field.clean('<div><p>Test</p></div>')
         self.assertIsInstance(cleaned_value, HTMLPDFField.ElementList)
         self.assertEqual(len(cleaned_value), 1)
         self.assertIsInstance(cleaned_value[0], HTMLPDFField.Paragraph)

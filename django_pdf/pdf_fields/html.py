@@ -43,7 +43,7 @@ class HTMLPDFFieldElementList(list):
     def append(self, value):
         if not isinstance(value, HTMLPDFFieldElement):
             raise TypeError(f"{type(self).__name__} has to contain "
-                            f"HTMLPDFFieldElement objects only, "
+                            "HTMLPDFFieldElement objects only, "
                             f"not {type(value)}.")
         super().append(value)
 
@@ -77,6 +77,9 @@ class HTMLPDFFieldListItem(HTMLPDFFieldElement):
 
 class HTMLPDFFieldAnchor(HTMLPDFFieldElement):
     REQUIRED_ATTRS = ['href']
+
+    def get_url(self):
+        return self.attrs['href']
 
 
 class HtmlPDFFieldImage(HTMLPDFFieldElement):
@@ -139,11 +142,16 @@ class HTMLPDFField(AbstractPDFField):
         'ul': UnorderedList,
     }
     TRAVERSE_AND_IGNORE_TAGS = [
+        'body',
         'div',
+        'html',
     ]
     IGNORE_TAGS = [
-        'iframe',
         'embed',
+        'head',
+        'iframe',
+        'script',
+        'style',
     ]
 
     def clean_value(self, value, context=None):
@@ -161,16 +169,9 @@ class HTMLPDFField(AbstractPDFField):
         value = str(value)
         html_list = HTMLPDFFieldElementList()
         # Convert new line characters
-        splitlined_string = value.strip().splitlines()
+        splitlined_string = value.splitlines()
         for key, text_string in enumerate(splitlined_string):
-            # Replace new lines
-            if key < len(splitlined_string) and key > 0:
-                html_list.append(self.NewLine())
-            # Make sure we're not adding empty strings full of
-            # whitespaces.
-            text_string = text_string.strip()
-            if text_string:
-                html_list.append(self.Text(text_string))
+            html_list.append(self.Text(text_string))
         return html_list
 
     def get_pdf_field_element_for_tag(self, tag_name):

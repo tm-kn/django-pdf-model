@@ -19,6 +19,7 @@ class Report(PDFModelMixin, models.Model):
         pdf_fields.HeadingPDFField('introduction', heading_level=3),
         pdf_fields.CharPDFField('content'),
         pdf_fields.CharPDFField('author_name'),
+        pdf_fields.HTMLPDFField('html_content'),
         pdf_fields.HTMLPDFField('some_html_content'),
     ]
 
@@ -28,7 +29,18 @@ class Report(PDFModelMixin, models.Model):
 
     def some_html_content(self):
         return """
-        <p>Test</p>
+        <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        Nulla ut vestibulum lectus, ac pharetra lectus. Mauris hendrerit
+        purus sapien, ac egestas ipsum aliquam vitae.
+        </p>
+        <u>Pellentesque porta
+        varius eros. Sed at tincidunt nisl. Phasellus turpis lectus,
+        aliquam sed facilisis et, dignissim et sem.</u>
+        <strong>Sed venenatisconsectetur tellus, non rhoncus lorem scelerisque
+        ut. Praesent diam orci, porttitor vel cursus quis, accumsan sed risus.
+        Ut commodo, ex id ultrices pretium, eros nunc scelerisque risus, et
+        sodales justo erat id risus. Nulla at condimentum elit.</strong>
         """
 
     def get_absolute_url(self):
