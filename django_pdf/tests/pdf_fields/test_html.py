@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import RequestFactory, TestCase
 
 from django_pdf.pdf_fields import HTMLPDFField
 from django_pdf.exceptions import PDFFieldCleaningError
@@ -156,3 +156,31 @@ class TestHTMLPDFFieldAnchor(TestCase):
     def test_anchor_with_href(self):
         anchor = HTMLPDFField.Anchor(None, attrs={'href': 'http://dgg.gg'})
         self.assertEqual(anchor.attrs['href'], 'http://dgg.gg')
+
+    def test_anchor_clean_with_absolute_url(self):
+        anchor = HTMLPDFField.Anchor(None, attrs={'href': 'http://dgg.gg'})
+        anchor.clean({})
+        self.assertEqual(anchor.attrs['href'], 'http://dgg.gg')
+
+    def test_anchor_clean_with_relative_url_without_request(self):
+        anchor = HTMLPDFField.Anchor(None, attrs={'href': '/data/'})
+        anchor.clean({})
+        self.assertEqual(anchor.attrs['href'], '')
+
+    def test_anchor_clean_with_relative_url_with_request(self):
+        request = RequestFactory().get('/page/other/',
+                                       HTTP_HOST='example-pdf-host.com',
+                                       secure=False)
+        anchor = HTMLPDFField.Anchor(None, attrs={'href': '/data/'})
+        anchor.clean({'request': request})
+        self.assertEqual(anchor.attrs['href'],
+                         'http://example-pdf-host.com/data/')
+
+    def test_anchor_clean_with_relative_url_with_request_without_slash(self):
+        request = RequestFactory().get('/some-page/',
+                                       HTTP_HOST='example-pdf-host.com',
+                                       secure=True)
+        anchor = HTMLPDFField.Anchor(None, attrs={'href': 'data/'})
+        anchor.clean({'request': request})
+        self.assertEqual(anchor.attrs['href'],
+                         'https://example-pdf-host.com/some-page/data/')

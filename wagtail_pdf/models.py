@@ -1,7 +1,7 @@
 from wagtail.wagtailcore.models import Page
 from wagtail.contrib.wagtailroutablepage.models import RoutablePageMixin, route
 
-from ..models import PDFModelMixin
+from django_pdf.models import PDFModelMixin
 
 
 class PDFPageMixin(PDFModelMixin, RoutablePageMixin, Page):

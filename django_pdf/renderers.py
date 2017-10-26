@@ -24,7 +24,7 @@ class AbstractPDFFieldRenderer(object):
                 )
             )
 
-    def render(self, pdf_renderer, field_bound_value):
+    def render(self, pdf_renderer, field_bound_value, context=None):
         raise NotImplementedError("PDFFieldRenderer has to implement "
                                   "render() method.")
 
@@ -46,7 +46,7 @@ class AbstractPDFRenderer(object):
         raise NotImplementedError("PDFRenderer has to implement "
                                   "set_up() method.")
 
-    def render_field(self, field_bound_value):
+    def render_field(self, field_bound_value, context):
         try:
             renderer_class = self._find_field_renderer(field_bound_value.field)
         except PDFFieldRendererNotFound:

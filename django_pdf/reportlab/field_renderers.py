@@ -10,7 +10,7 @@ from django_pdf.utils import flatten_list
 class ReportLabCharPDFFieldRenderer(AbstractPDFFieldRenderer):
     field_type = pdf_fields.CharPDFField
 
-    def render(self, pdf_renderer, field_bound_value):
+    def render(self, pdf_renderer, field_bound_value, context=None):
         reportlab_paragraph = Paragraph(field_bound_value.value,
                                         style=pdf_renderer.styles['Normal'])
 
@@ -20,7 +20,7 @@ class ReportLabCharPDFFieldRenderer(AbstractPDFFieldRenderer):
 class ReportLabTitlePDFFieldRenderer(AbstractPDFFieldRenderer):
     field_type = pdf_fields.TitlePDFField
 
-    def render(self, pdf_renderer, field_bound_value):
+    def render(self, pdf_renderer, field_bound_value, context=None):
         reportlab_paragraph = Paragraph(field_bound_value.value,
                                         style=pdf_renderer.styles['Title'])
 
@@ -30,7 +30,7 @@ class ReportLabTitlePDFFieldRenderer(AbstractPDFFieldRenderer):
 class ReportLabHeadingPDFFieldRenderer(AbstractPDFFieldRenderer):
     field_type = pdf_fields.HeadingPDFField
 
-    def render(self, pdf_renderer, field_bound_value):
+    def render(self, pdf_renderer, field_bound_value, context=None):
         style_name = 'Heading{}'.format(field_bound_value.field.heading_level)
 
         reportlab_paragraph = Paragraph(
@@ -44,7 +44,7 @@ class ReportLabHeadingPDFFieldRenderer(AbstractPDFFieldRenderer):
 class ReportLabImagePDFFieldRenderer(AbstractPDFFieldRenderer):
     field_type = pdf_fields.ImagePDFField
 
-    def render(self, pdf_renderer, field_bound_value):
+    def render(self, pdf_renderer, field_bound_value, context=None):
         reportlab_image = Image(field_bound_value.value.open())
 
         pdf_renderer._doc_elements.append(reportlab_image)
@@ -53,17 +53,18 @@ class ReportLabImagePDFFieldRenderer(AbstractPDFFieldRenderer):
 class ReportLabHTMLPDFFieldRenderer(AbstractPDFFieldRenderer):
     field_type = HTMLPDFField
 
-    def render(self, pdf_renderer, field_bound_value):
-        self.render_parent_html_node(pdf_renderer, field_bound_value.value)
+    def render(self, pdf_renderer, field_bound_value, context=None):
+        self.render_parent_html_node(pdf_renderer, field_bound_value.value,
+                                     context)
 
-    def render_parent_html_node(self, pdf_renderer, node):
+    def render_parent_html_node(self, pdf_renderer, node, context):
         """
         Render the top level HTML node.
         """
         # List of HTML tags
         if isinstance(node, HTMLPDFField.ElementList):
             for node_item in node:
-                self.render_parent_html_node(pdf_renderer, node_item)
+                self.render_parent_html_node(pdf_renderer, node_item, context)
             return
         # Paragraph and text
         if isinstance(node, (HTMLPDFField.Paragraph,
@@ -109,7 +110,9 @@ class ReportLabHTMLPDFFieldRenderer(AbstractPDFFieldRenderer):
             return ['<u>{}</u>'.format(''.join(flatten_list(content)))]
         if isinstance(element, HTMLPDFField.StrikeThroughText):
             content = self.convert_html_node_to_rlab_xml(element.value)
-            return ['<strike>{}</strike>'.format(''.join(flatten_list(content)))]
+            return ['<strike>{}</strike>'.format(''.join(
+                flatten_list(content)
+            ))]
         if isinstance(element, str):
             return [element]
         error_msg = "{} cannot be converted to ReportLab XML."

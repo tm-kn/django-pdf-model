@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup, NavigableString, Tag
 
@@ -32,6 +33,9 @@ class HTMLPDFFieldElement(object):
         if hasattr(cls, 'REQUIRED_ATTRS'):
             return cls.REQUIRED_ATTRS
         return {}
+
+    def clean(self, context):
+        pass
 
 
 class HTMLPDFFieldElementList(list):
@@ -77,6 +81,22 @@ class HTMLPDFFieldListItem(HTMLPDFFieldElement):
 
 class HTMLPDFFieldAnchor(HTMLPDFFieldElement):
     REQUIRED_ATTRS = ['href']
+
+    def clean(self, context):
+        # If the URL is already absolute, let's leave it that way
+        location = self.attrs['href']
+        is_absolute = bool(urlparse(location).netloc)
+        if is_absolute:
+            return
+        # Build absolute URL
+        request = context.get('request')
+        if request and hasattr(request, 'build_absolute_uri'):
+            request.build_absolute_uri(location)
+            self.attrs['href'] = request.build_absolute_uri(location)
+            return
+
+        # Delete href if we can't build absolute URL
+        self.attrs['href'] = ''
 
     def get_url(self):
         return self.attrs['href']
@@ -155,17 +175,17 @@ class HTMLPDFField(AbstractPDFField):
     ]
 
     def clean_value(self, value, context=None):
-        return self.convert_html_to_pdf_field_structure(value)
+        return self.convert_html_to_pdf_field_structure(value, context)
 
-    def convert_html_to_pdf_field_structure(self, value):
+    def convert_html_to_pdf_field_structure(self, value, context):
         soup = BeautifulSoup(value, 'html5lib')
         try:
-            return self.traverse_html_tag(soup.body.contents)
+            return self.traverse_html_tag(soup.body.contents, context)
         except HTMLPDFFieldElementNotFound:
             logger.exception("Could not find any HTML elements to generate "
                              "PDF content out of.")
 
-    def convert_html_to_pdf_text(self, value):
+    def convert_html_to_pdf_text(self, value, context):
         value = str(value)
         html_list = HTMLPDFFieldElementList()
         # Convert new line characters
@@ -184,22 +204,22 @@ class HTMLPDFField(AbstractPDFField):
                 return element_class
         raise KeyError
 
-    def traverse_list(self, tags_list):
+    def traverse_list(self, tags_list, context):
         structure = HTMLPDFFieldElementList()
         for child in tags_list:
             try:
-                structure += self.traverse_html_tag(child)
+                structure += self.traverse_html_tag(child, context)
             except HTMLPDFFieldElementNotFound:
                 logger.exception('Could not generate PDF content out of the '
                                  'HTML content.')
         return structure
 
-    def traverse_tag_instance(self, tag):
+    def traverse_tag_instance(self, tag, context):
         try:
             klass = self.get_pdf_field_element_for_tag(tag.name)
         except KeyError:
             if tag.name in self.TRAVERSE_AND_IGNORE_TAGS:
-                return self.traverse_html_tag(tag.contents)
+                return self.traverse_html_tag(tag.contents, context)
             if tag.name in self.IGNORE_TAGS:
                 return HTMLPDFFieldElementList()
         else:
@@ -207,8 +227,8 @@ class HTMLPDFField(AbstractPDFField):
             attrs = {req_attr: tag.attrs.get(req_attr)
                      for req_attr in klass.get_required_attrs()}
             try:
-                value = klass(self.traverse_html_tag(tag.contents),
-                              attrs=attrs)
+                value = klass(self.traverse_html_tag(tag.contents, context),
+                              attrs=attrs, context=context)
             except PDFFieldCleaningError:
                 logger.exception("Cleaning error when traversing HTML "
                                  "structure.")
@@ -220,13 +240,13 @@ class HTMLPDFField(AbstractPDFField):
         logger.error(error_msg, tag.name)
         raise HTMLPDFFieldElementNotFound
 
-    def traverse_html_tag(self, tag):
+    def traverse_html_tag(self, tag, context):
         # If it's a list, evaluate its children and append
         if isinstance(tag, list):
-            return self.traverse_list(tag)
+            return self.traverse_list(tag, context)
         # Convert strings to PDF field text object.
         if isinstance(tag, NavigableString):
-            return self.convert_html_to_pdf_text(str(tag))
+            return self.convert_html_to_pdf_text(str(tag), context)
         # Convert tag to a PDF field type and evaluate its children.
         if isinstance(tag, Tag):
-            return self.traverse_tag_instance(tag)
+            return self.traverse_tag_instance(tag, context)

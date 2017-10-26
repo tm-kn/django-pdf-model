@@ -25,7 +25,7 @@ setup(
     url='http://tmkn.uk',
     install_requires=install_requires,
     tests_require=tests_require,
-    packages=['django_pdf'],
+    packages=['django_pdf', 'wagtail_pdf'],
     include_package_data=True,
     license='BSD-2',
     long_description=long_description

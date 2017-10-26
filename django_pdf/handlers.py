@@ -90,7 +90,7 @@ class ModelToPDFHandler(AbstractModelToPDFHandler):
         renderer = self.get_pdf_renderer()
 
         for field_bound_value in cleaned_pdf_field_values:
-            renderer.render_field(field_bound_value)
+            renderer.render_field(field_bound_value, context=self.context)
 
         # Save renderered PDF to the buffer
         renderer.save()

@@ -4,6 +4,8 @@ DEMOSITE_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 DEBUG = True
 
+ALLOWED_HOSTS = ['*']
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
