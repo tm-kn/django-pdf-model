@@ -6,6 +6,8 @@ from django_pdf.exceptions import PDFFieldRendererError
 from django_pdf.renderers import AbstractPDFFieldRenderer
 from django_pdf.utils import flatten_list
 
+from django_pdf.reportlab.pdf_fields import ReportLabFlowablePDFField
+
 
 class ReportLabCharPDFFieldRenderer(AbstractPDFFieldRenderer):
     field_type = pdf_fields.CharPDFField
@@ -125,3 +127,12 @@ class ReportLabHTMLPDFFieldRenderer(AbstractPDFFieldRenderer):
             style=pdf_renderer.styles['Normal']
         )
         pdf_renderer._doc_elements.append(new_paragraph)
+
+
+class ReportLabFlowablePDFFieldRenderer(AbstractPDFFieldRenderer):
+    field_type = ReportLabFlowablePDFField
+
+    def render(self, pdf_renderer, field_bound_value, context=None):
+        flowable_instance = self.flowable_class(
+            field_bound_value.value, **field_bound_value.field.kwargs)
+        pdf_renderer._doc_elements.append(flowable_instance)
