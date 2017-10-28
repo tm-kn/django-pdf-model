@@ -37,6 +37,7 @@ class Report(PDFModelMixin, models.Model):
         <u>Pellentesque porta
         varius eros. Sed at tincidunt nisl. Phasellus turpis lectus,
         aliquam sed facilisis et, dignissim et sem.</u>
+        <a href="http://dgg.gg">Duck duck!</a>
         <strong>Sed venenatisconsectetur tellus, non rhoncus lorem scelerisque
         ut. Praesent diam orci, porttitor vel cursus quis, accumsan sed risus.
         Ut commodo, ex id ultrices pretium, eros nunc scelerisque risus, et

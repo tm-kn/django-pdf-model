@@ -94,7 +94,6 @@ class HTMLPDFFieldAnchor(HTMLPDFFieldElement):
             request.build_absolute_uri(location)
             self.attrs['href'] = request.build_absolute_uri(location)
             return
-
         # Delete href if we can't build absolute URL
         self.attrs['href'] = ''
 
@@ -228,7 +227,8 @@ class HTMLPDFField(AbstractPDFField):
                      for req_attr in klass.get_required_attrs()}
             try:
                 value = klass(self.traverse_html_tag(tag.contents, context),
-                              attrs=attrs, context=context)
+                              attrs=attrs)
+                value.clean(context)
             except PDFFieldCleaningError:
                 logger.exception("Cleaning error when traversing HTML "
                                  "structure.")
